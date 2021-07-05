@@ -1,94 +1,78 @@
-"use strict";
+import Model from './model.js';
+import View from './view.js';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports["default"] = void 0;
+export default class Controller{
+    constructor(){
+        this.model = new Model(); 
+        this.view = new View();
 
-var _model = _interopRequireDefault(require("./model.js"));
+        this.view.render(this.model.data, this.model.isArchived, this.calcStat, this.model.cathegories);
 
-var _view = _interopRequireDefault(require("./view.js"));
+        this.view.addEventListener(
+            this.callbackForClosePopup, 
+            this.archivedStatusChange,
+            this.openTaskPopup,
+        );
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+        this.view.addDynamicEventListener(
+            this.deleteTask,
+            this.changeArchivedStatusOfTask,
+            this.openTaskPopupUpd, 
+        )
+        
+    }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+    editedTaskTarget;
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+    reRender = () => {
+        this.view.render(this.model.data, this.model.isArchived, this.calcStat, this.model.cathegories);
+        this.view.addDynamicEventListener(this.deleteTask, this.changeArchivedStatusOfTask, this.openTaskPopupUpd,);
+    }
 
-var Controller = function Controller() {
-  var _this = this;
+    addTask = () => {
+        const result = this.model.addTask(this.model.data, this.model.inputs, this.callbackForClosePopup);
+        !result ? this.view.addEventListenerForNewTaskSave(this.addTask, this.model.inputs) : null;
+        this.reRender();
+    }
 
-  _classCallCheck(this, Controller);
+    deleteTask = (e) => {
+        this.model.deleteTask(this.model.data, e);
+        this.reRender();
+    }
 
-  _defineProperty(this, "editedTaskTarget", void 0);
+    updateTask = () => {
+        const result = this.model.updateTask(this.model.data, this.model.inputs, this.callbackForClosePopup, this.editedTaskTarget);
+        !result ? this.view.addEventListenerForUpdateTask(this.updateTask, this.model.inputs) : null;
+        this.reRender();
+    }
 
-  _defineProperty(this, "reRender", function () {
-    _this.view.render(_this.model.data, _this.model.isArchived, _this.calcStat, _this.model.cathegories);
+    changeArchivedStatusOfTask = (e) => {
+        this.model.changeArchivedStatusOfTask(this.model.data, e);
+        this.reRender();
+    }
 
-    _this.view.addDynamicEventListener(_this.deleteTask, _this.changeArchivedStatusOfTask, _this.openTaskPopupUpd);
-  });
+    callbackForClosePopup = () => {
+        this.view.closeTaskPopup(this.model.inputs);
+    }
 
-  _defineProperty(this, "addTask", function () {
-    var result = _this.model.addTask(_this.model.data, _this.model.inputs, _this.callbackForClosePopup);
+    openTaskPopup = () =>{
+        this.view.openTaskPopup(this.model.inputs);
+        this.view.addEventListenerForNewTaskSave(this.addTask, this.model.inputs);
+    }
 
-    !result ? _this.view.addEventListenerForNewTaskSave(_this.addTask, _this.model.inputs) : null;
+    openTaskPopupUpd = (e) => {
+        this.editedTaskTarget = e;
+        this.view.openTaskPopupUpd(this.model.inputs, this.model.data, e);
+        this.view.addEventListenerForUpdateTask(this.updateTask, this.model.inputs);
+    }
 
-    _this.reRender();
-  });
+    archivedStatusChange = (e) => {
+        this.model.changeArchivedStatus(this.model.setIsArchived, e);
+        this.reRender();
+    }
 
-  _defineProperty(this, "deleteTask", function (e) {
-    _this.model.deleteTask(_this.model.data, e);
+    calcStat = () => {
+        return this.model.calcStat(this.model.data, this.model.cathegories);
+    }
 
-    _this.reRender();
-  });
-
-  _defineProperty(this, "updateTask", function () {
-    var result = _this.model.updateTask(_this.model.data, _this.model.inputs, _this.callbackForClosePopup, _this.editedTaskTarget);
-
-    !result ? _this.view.addEventListenerForUpdateTask(_this.updateTask, _this.model.inputs) : null;
-
-    _this.reRender();
-  });
-
-  _defineProperty(this, "changeArchivedStatusOfTask", function (e) {
-    _this.model.changeArchivedStatusOfTask(_this.model.data, e);
-
-    _this.reRender();
-  });
-
-  _defineProperty(this, "callbackForClosePopup", function () {
-    _this.view.closeTaskPopup(_this.model.inputs);
-  });
-
-  _defineProperty(this, "openTaskPopup", function () {
-    _this.view.openTaskPopup(_this.model.inputs);
-
-    _this.view.addEventListenerForNewTaskSave(_this.addTask, _this.model.inputs);
-  });
-
-  _defineProperty(this, "openTaskPopupUpd", function (e) {
-    _this.editedTaskTarget = e;
-
-    _this.view.openTaskPopupUpd(_this.model.inputs, _this.model.data, e);
-
-    _this.view.addEventListenerForUpdateTask(_this.updateTask, _this.model.inputs);
-  });
-
-  _defineProperty(this, "archivedStatusChange", function (e) {
-    _this.model.changeArchivedStatus(_this.model.setIsArchived, e);
-
-    _this.reRender();
-  });
-
-  _defineProperty(this, "calcStat", function () {
-    return _this.model.calcStat(_this.model.data, _this.model.cathegories);
-  });
-
-  this.model = new _model["default"]();
-  this.view = new _view["default"]();
-  this.view.render(this.model.data, this.model.isArchived, this.calcStat, this.model.cathegories);
-  this.view.addEventListener(this.callbackForClosePopup, this.archivedStatusChange, this.openTaskPopup);
-  this.view.addDynamicEventListener(this.deleteTask, this.changeArchivedStatusOfTask, this.openTaskPopupUpd);
-};
-
-exports["default"] = Controller;
+}
