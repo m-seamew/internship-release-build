@@ -68,7 +68,7 @@ export default class View {
     }
 
     renderReturnedDates( arrMatches ){
-        return arrMatches > 0
+        return arrMatches.length > 0
                   ? arrMatches.map( el => `<div>${el}</div>`).join('')
                   : '-';
     }
